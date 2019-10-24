@@ -4,16 +4,16 @@
   "license": "MIT",
   "dependencies": {
     "fs-extra-promise": "1.0.1",
-    "lodash": "4.17.10",
-    "screeps": "2.13.2"
+    "lodash": "4.17.15",
+    "screeps": "4.0.5"
   },
   "devDependencies": {
-    "eslint": "5.4.0",
-    "eslint-config-airbnb-base": "13.1.0",
-    "eslint-plugin-import": "2.14.0",
-    "mocha": "5.2.0",
-    "npm-cli-login": "0.0.10",
-    "nyc": "13.0.1"
+    "eslint": "6.5.1",
+    "eslint-config-airbnb-base": "14.0.0",
+    "eslint-plugin-import": "2.18.2",
+    "mocha": "6.2.2",
+    "npm-cli-login": "0.1.1",
+    "nyc": "14.1.1"
   },
   "scripts": {
     "coverage": "nyc mocha --ui tdd --exit",

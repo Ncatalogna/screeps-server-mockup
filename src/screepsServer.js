@@ -38,7 +38,7 @@ class ScreepsServer extends EventEmitter {
         this.opts = Object.assign({
             path:   path.resolve('server'),
             logdir: path.resolve('server', 'logs'),
-            port:   21025,
+            port:   21000,//21025,
         }, opts);
         // Define environment parameters
         process.env.MODFILE = this.opts.modfile;
@@ -67,8 +67,8 @@ class ScreepsServer extends EventEmitter {
             MODFILE:      path.resolve(this.opts.path, MOD_FILE),
             STORAGE_PORT: this.opts.port,
         });
-        await new Promise((resolve, reject) => {
-            const timeout = setTimeout(() => reject(new Error('Could not launch the storage process (timeout).')), 5000);
+        var promiseResult = await new Promise((resolve, reject) => {
+            const timeout = setTimeout(() => { throw new Error('Could not launch the storage process (timeout).'); } , 500000);
             process.on('message', (message) => {
                 if (message === 'storageLaunched') {
                     clearTimeout(timeout);
@@ -116,7 +116,7 @@ class ScreepsServer extends EventEmitter {
     */
     async startProcess(name, execPath, env) {
         const fd = await fs.openAsync(path.resolve(this.opts.logdir, `${name}.log`), 'a');
-        this.processes[name] = cp.fork(path.resolve(execPath), { stdio: [0, fd, fd, 'ipc'], env });
+        this.processes[name] = cp.fork(path.resolve(execPath), { execArgv: ['--harmony'], stdio: [0, fd, fd, 'ipc'], env });
         this.emit('info', `[${name}] process ${this.processes[name].pid} started`);
         this.processes[name].on('exit', async (code, signal) => {
             await fs.closeAsync(fd);

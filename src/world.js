@@ -70,6 +70,17 @@ class World {
         return TerrainMatrix.unserialize(serial);
     }
 
+    async getUsers(username) {
+        const { db } = this.server.common.storage;
+        // Load data
+        const data = await db['users'].find({ username });
+        // Check if data actually exists
+        if (data.length === 0) {
+            throw new Error(`room ${room} doesn't appear to have any terrain data`);
+        }
+        return data;
+    }
+
     /**
         Define room terrain data (walls, plains and swamps)
         @terrain must be an instance of TerrainMatrix.
@@ -111,17 +122,17 @@ class World {
     async reset() {
         const { db, env } = await this.load();
         // Clear database
-        await Promise.all(_.map(db, col => col.clear()));
+       /*  await Promise.all(_.map(db, col => col.clear()));
         await env.set('gameTime', 1);
         // Generate basic terrain data
         const terrain = new TerrainMatrix();
         const walls = [[10, 10], [10, 40], [40, 10], [40, 40]];
-        _.each(walls, ([x, y]) => terrain.set(x, y, 'wall'));
+        _.each(walls, ([x, y]) => terrain.set(x, y, 'wall')); */
         // Insert basic room data
-        await Promise.all([
+        /* await Promise.all([
             db.users.insert({ _id: '2', username: 'Invader', cpu: 100, cpuAvailable: 10000, gcl: 13966610.2, active: 0 }),
             db.users.insert({ _id: '3', username: 'Source Keeper', cpu: 100, cpuAvailable: 10000, gcl: 13966610.2, active: 0 })
-        ]);
+        ]); */
     }
 
     /**
@@ -161,18 +172,20 @@ class World {
     async addBot({ username, room, x, y, gcl = 1, cpu = 100, cpuAvailable = 10000, active = 10000, spawnName = 'Spawn1', modules = {} }) {
         const { C, db, env } = await this.load();
         // Ensure that there is a controller in requested room
-        const data = await db['rooms.objects'].findOne({ $and: [{ room }, { type: 'controller' }] });
+        const data = await db['rooms.terrain'].find({ room });
+        /* const data = await db['rooms.objects'].findOne({ $and: [{ room }, { type: 'controller' }] });
         if (data == null) {
-            throw new Error(`cannot add user in ${room}: room does not have any controller`);
-        }
+            throw new Error(`cannot add user in ${room}: room does not have any controller`);            
+        } */
         // Insert user and update data
         const user = await db.users.insert({ username, cpu, cpuAvailable, gcl, active });
         await Promise.all([
             env.set(env.keys.MEMORY + user._id, '{}'),
             db.rooms.update({ _id: room }, { $set: { active: true } }),
             db['users.code'].insert({ user: user._id, branch: 'default', modules, activeWorld: true }),
-            db['rooms.objects'].update({ room, type: 'controller' }, { $set: { user: user._id, level: 1, progress: 0, downgradeTime: null, safeMode: 20000 } }),
-            db['rooms.objects'].insert({ room, type: 'spawn', x, y, user: user._id, name: spawnName, energy: C.SPAWN_ENERGY_START, energyCapacity: C.SPAWN_ENERGY_CAPACITY, hits: C.SPAWN_HITS, hitsMax: C.SPAWN_HITS, spawning: null, notifyWhenAttacked: true }),
+            db['rooms.objects'].update({ room, type: 'controller' }, { $set: { user: user._id, level: 1, progress: 0, downgradeTime: null, safeMode: 20000 } })
+            ,
+            db['rooms.objects'].insert({ room, type: 'spawn', x, y, user: user._id, name: spawnName, /* energy: C.SPAWN_ENERGY_START,energyCapacity: C.SPAWN_ENERGY_CAPACITY,  */ hits: C.SPAWN_HITS, hitsMax: C.SPAWN_HITS, spawning: null, notifyWhenAttacked: true }),
         ]);
         // Subscribe to console notificaiton and return emitter
         return new User(this.server, user).init();

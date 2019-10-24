@@ -14,16 +14,22 @@ suite('Basics tests', function () {
     // Server variable used for the tests
     let server = null;
 
-    test('Starting server and running a few ticks without error', async function () {
-        server = new ScreepsServer();
-        await server.start();
-        for (let i = 0; i < 5; i += 1) {
-            await server.tick();
-        }
-        server.stop();
+    test('Starting server and running a few ticks without error', async (done) => {
+        try {
+            server = new ScreepsServer();
+            await server.start();
+            for (let i = 0; i < 5; i += 1) {
+                await server.tick();
+            }
+            server.stop();
+            done();
+        } catch (error) {
+            console.log(error);
+            throw error;
+        }        
     });
 
-    test('Setting options in server constructor', async function () {
+    test('Setting options in server constructor', async (done) => {
         // Setup options and server
         const opts = {
             path:   'another_dir',
@@ -44,32 +50,44 @@ suite('Basics tests', function () {
         // Assert if files where actually created in the good directory
         await fs.accessAsync(path.resolve(opts.path));
         await fs.accessAsync(path.resolve(opts.logdir));
+        done();
     });
 
-    test('Running user code', async function () {
-        // Server initialization
-        server = new ScreepsServer();
-        await server.world.stubWorld();
-        // Code declaration
-        const modules = {
-            main: `module.exports.loop = function() {
-               console.log('tick', Game.time)
-            }`,
-        };
-        // User / bot initialization
-        let logs = [];
-        const user = await server.world.addBot({ username: 'bot', room: 'W0N0', x: 25, y: 25, modules });
-        user.on('console', (log) => {
-            logs = logs.concat(log);
-        });
-        // Run a few ticks
-        await server.start();
-        for (let i = 0; i < 5; i += 1) {
-            await server.tick();
-        }
-        server.stop();
-        // Assert if code was correctly executed
-        assert.deepEqual(logs, ['tick 1', 'tick 2', 'tick 3', 'tick 4', 'tick 5']);
+    test('Running user code', async (done) => {
+        try {
+            // Server initialization
+            server = new ScreepsServer();
+            await server.world.stubWorld();
+            // Code declaration
+            const modules = {
+                main: `module.exports.loop = function() {
+                    console.log('tick', Game.time);
+                }`,
+            };
+            // User / bot initialization
+            let logs = [];
+            const user = await server.world.addBot({ username: 'userTest', room: 'W2N2', x: 25, y: 25, modules });
+            user.on('console', (log) => {
+                logs = logs.concat(log);
+            });
+
+            // Run a few ticks
+            await server.start();
+
+            for (let i = 0; i < 5; i += 1) {
+                console.log('[tick]', await server.world.gameTime);
+                await server.tick();
+                _.each(await user.newNotifications, ({ message }) => console.log('[notification]', message));
+                console.log('[memory]', await user.memory, '\n');
+            }
+            server.stop();
+            // Assert if code was correctly executed
+            assert.deepEqual(logs, ['tick 1', 'tick 2', 'tick 3', 'tick 4', 'tick 5']);
+            done();
+        }  catch (error) {
+            console.log(error);
+            throw error;
+        }          
     });
 
     test('Getting current tick', async function () {
