@@ -151,11 +151,11 @@ class World {
             addRoomObjects(roomName, roomObjects)
         ]);
         // Add rooms
-        const rooms = require('../assets/rooms.json'); // eslint-disable-line global-require
+        /* const rooms = require('../assets/rooms.json'); // eslint-disable-line global-require
         await Promise.all(_.map(rooms, (data, roomName) => {
             const terrain = TerrainMatrix.unserialize(data.serial);
             return addRoom(roomName, terrain, data.objects);
-        }));
+        })); */
     }
 
     /**
@@ -185,7 +185,22 @@ class World {
             db['users.code'].insert({ user: user._id, branch: 'default', modules, activeWorld: true }),
             db['rooms.objects'].update({ room, type: 'controller' }, { $set: { user: user._id, level: 1, progress: 0, downgradeTime: null, safeMode: 20000 } })
             ,
-            db['rooms.objects'].insert({ room, type: 'spawn', x, y, user: user._id, name: spawnName, /* energy: C.SPAWN_ENERGY_START,energyCapacity: C.SPAWN_ENERGY_CAPACITY,  */ hits: C.SPAWN_HITS, hitsMax: C.SPAWN_HITS, spawning: null, notifyWhenAttacked: true }),
+            db['rooms.objects'].insert(
+                {   type:'spawn', 
+                    room: room, 
+                    x: x, 
+                    y: y,
+                    name: spawnName,
+                    user: user._id,
+                    hits: C.SPAWN_HITS,
+                    hitsMax: C.SPAWN_HITS,
+                    spawning: null,
+                    notifyWhenAttacked: false,                    
+                    store: { energy: C.SPAWN_ENERGY_START }, 
+                    storeCapacityResource: { energy: C.SPAWN_ENERGY_START }, 
+                    off: false 
+                })
+                
         ]);
         // Subscribe to console notificaiton and return emitter
         return new User(this.server, user).init();
