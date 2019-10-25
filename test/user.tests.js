@@ -24,7 +24,7 @@ suite('User tests', function () {
                 Memory.foo = { bar: 'baz' }
             }`,
         };
-        const user = await server.world.addBot({ username: 'bot', room: 'W0N0', x: 25, y: 25, modules });
+        const user = await server.world.addBot({ username: 'bot', room: 'W2N2', x: 25, y: 25, modules });
         // Run one tick
         await server.tick();
         (await user.newNotifications).forEach(({ message }) => console.log('[notification]', message));
@@ -35,7 +35,7 @@ suite('User tests', function () {
         assert.equal(await user.cpuAvailable, 10000);
         assert(_.isNumber(await user.lastUsedCpu), 'user.lastUsedCpu is not a number');
         assert.equal(await user.gcl, 1);
-        assert.deepEqual(await user.rooms, ['W0N0']);
+        assert.deepEqual(await user.rooms, ['W2N2']);
         // Assert if memory is correctly set and retrieved
         const memory = JSON.parse(await user.memory);
         const reference = { foo: { bar: 'baz' } };
@@ -87,7 +87,7 @@ suite('User tests', function () {
         };
         // User / bot initialization
         const logs = [];
-        const user = await server.world.addBot({ username: 'bot', room: 'W0N0', x: 25, y: 25, modules });
+        const user = await server.world.addBot({ username: 'bot', room: 'W2N2', x: 25, y: 25, modules });
         user.on('console', (log, results, userid, username) => {
             logs.push({ log, results, userid, username });
         });
@@ -117,7 +117,7 @@ suite('User tests', function () {
             }`,
         };
         // User / bot initialization
-        const user = await server.world.addBot({ username: 'bot', room: 'W0N0', x: 25, y: 25, modules });
+        const user = await server.world.addBot({ username: 'bot', room: 'W2N2', x: 25, y: 25, modules });
         // Run a few ticks
         await server.start();
         for (let i = 0; i < 3; i += 1) {

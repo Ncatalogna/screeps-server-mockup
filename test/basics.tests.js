@@ -14,22 +14,21 @@ suite('Basics tests', function () {
     // Server variable used for the tests
     let server = null;
 
-    test('Starting server and running a few ticks without error', async (done) => {
+    test('Starting server and running a few ticks without error', async () => {
         try {
             server = new ScreepsServer();
             await server.start();
             for (let i = 0; i < 5; i += 1) {
                 await server.tick();
             }
-            server.stop();
-            done();
+            server.stop();            
         } catch (error) {
             console.log(error);
             throw error;
         }        
     });
 
-    test('Setting options in server constructor', async (done) => {
+    test('Setting options in server constructor', async () => {
         // Setup options and server
         const opts = {
             path:   'another_dir',
@@ -49,11 +48,10 @@ suite('Basics tests', function () {
         server.stop();
         // Assert if files where actually created in the good directory
         await fs.accessAsync(path.resolve(opts.path));
-        await fs.accessAsync(path.resolve(opts.logdir));
-        done();
+        await fs.accessAsync(path.resolve(opts.logdir));        
     });
 
-    test('Running user code', async (done) => {
+    test('Running user code', async () => {
         try {
             // Server initialization
             server = new ScreepsServer();
@@ -74,16 +72,13 @@ suite('Basics tests', function () {
             // Run a few ticks
             await server.start();
 
-            for (let i = 0; i < 5; i += 1) {
-                console.log('[tick]', await server.world.gameTime);
+            for (let i = 0; i < 5; i += 1) {                
                 await server.tick();
-                _.each(await user.newNotifications, ({ message }) => console.log('[notification]', message));
-                console.log('[memory]', await user.memory, '\n');
+                //_.each(await user.newNotifications, ({ message }) => console.log('[notification]', message)); //In Fire, discoment 
             }
             server.stop();
             // Assert if code was correctly executed
             assert.deepEqual(logs, ['tick 1', 'tick 2', 'tick 3', 'tick 4', 'tick 5']);
-            done();
         }  catch (error) {
             console.log(error);
             throw error;

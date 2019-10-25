@@ -159,6 +159,28 @@ class World {
     }
 
     /**
+        Stub a basic world by adding 9 plausible rooms with sources, minerals and controllers
+    */
+    async stubWorld(rooms) {
+        // Clear database
+        await this.reset();
+        // Utility functions
+        const addRoomObjects = (roomName, objects) => Promise.all(
+            objects.map(o => this.addRoomObject(roomName, o.type, o.x, o.y, o.attributes))
+        );
+        const addRoom = (roomName, terrain, roomObjects) => Promise.all([
+            this.addRoom(roomName),
+            this.setTerrain(roomName, terrain),
+            addRoomObjects(roomName, roomObjects)
+        ]);
+        // Add rooms
+        await Promise.all(_.map(rooms, (data, roomName) => {
+            const terrain = TerrainMatrix.unserialize(data.serial);
+            return addRoom(roomName, terrain, data.objects);
+        })); 
+    }
+
+    /**
         Get the roomObjects list for requested roomName
     */
     async roomObjects(roomName) {
